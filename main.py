@@ -162,7 +162,7 @@ class Window(QtWidgets.QMainWindow):
         self.button_reset.setText('Resetiraj boje')
         self.button_reset.setFixedSize(120, 35)
         self.button_reset.setStyleSheet("*{background-color: rgb(200,200,200)}")
-        #self.button_reset.clicked.connect(self.prikaz_3d)
+        self.button_reset.clicked.connect(self.reset_2d_boje)
         self.g_layout_boje.addWidget(self.button_reset, 3, 0, 1, 2)
 
 
@@ -294,16 +294,16 @@ class Window(QtWidgets.QMainWindow):
 
 
 
-  # Popup prozor za kameru
+    # Popup prozor za kameru
         self.camera_widget = CameraWidget()
         self.camera_widget.resize_camera(480, 480)
 
         self.popup = QtWidgets.QDialog()
         self.popup.setWindowTitle("Snimanje kocke")
+        self.popup.finished.connect(self.ugasi_kameru)
         self.v_layout_popup = QtWidgets.QVBoxLayout(self.popup)
         self.v_layout_popup.addWidget(self.camera_widget)
 
-        
 
     # Ispis koraka
         # Frame za labele
@@ -505,18 +505,29 @@ class Window(QtWidgets.QMainWindow):
                 izabrana_boja = boja[1]
                 prev_boja = boja[0]
 
+
     def postavi_boju(self, button_name):
         global izabrana_boja
         self.cube_widget_2d.setColor(button_name, izabrana_boja)
 
 
-    def resetiraj_kocku(self):
-        pass
+    def reset_2d_boje(self):
+        self.cube_widget_2d.resetColors()
     
 
     # Funkcija za otvaranje popup prozora i snimanje kocke
     def snimi_kocku(self):
+        self.camera_widget.start_camera()
         self.popup.exec_()
+        self.camera_widget.center_colors = []
+        self.camera_widget.button_colors = {}
+
+    def ugasi_kameru(self):
+        button_colors = self.camera_widget.button_colors
+        if len(self.camera_widget.center_colors) == 6:
+            self.cube_widget_2d.setScanedColors(button_colors)
+
+        self.camera_widget.stop_camera()
 
 
     # Funkcija za dobivanje rjesenja i ispis istog

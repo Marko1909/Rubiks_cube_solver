@@ -13,6 +13,19 @@ colors = {
     'D': 'rgb(242,242,20)'  #Yellow
     }
 
+# Layout kocke u 2D prikazu
+cube_layout = [
+    [' ', ' ', ' ', 'U1', 'U2', 'U3', ' ', ' ', ' '],
+    [' ', ' ', ' ', 'U4', 'U5', 'U6', ' ', ' ', ' '],
+    [' ', ' ', ' ', 'U7', 'U8', 'U9', ' ', ' ', ' '],
+    ['L1', 'L2', 'L3', 'F1', 'F2', 'F3', 'R1', 'R2', 'R3', 'B1', 'B2', 'B3'],
+    ['L4', 'L5', 'L6', 'F4', 'F5', 'F6', 'R4', 'R5', 'R6', 'B4', 'B5', 'B6'],
+    ['L7', 'L8', 'L9', 'F7', 'F8', 'F9', 'R7', 'R8', 'R9', 'B7', 'B8', 'B9'],
+    [' ', ' ', ' ', 'D1', 'D2', 'D3', ' ', ' ', ' '],
+    [' ', ' ', ' ', 'D4', 'D5', 'D6', ' ', ' ', ' '],
+    [' ', ' ', ' ', 'D7', 'D8', 'D9', ' ', ' ', ' '],
+]
+
 
 class Cube2DWidget(QtWidgets.QWidget):
 
@@ -30,20 +43,7 @@ class Cube2DWidget(QtWidgets.QWidget):
         grid.setContentsMargins(0, 0, 5, 10)
         self.setLayout(grid)
 
-        global colors
-
-        # Define the cube layout in 2D as per the image
-        cube_layout = [
-            [' ', ' ', ' ', 'U1', 'U2', 'U3', ' ', ' ', ' '],
-            [' ', ' ', ' ', 'U4', 'U5', 'U6', ' ', ' ', ' '],
-            [' ', ' ', ' ', 'U7', 'U8', 'U9', ' ', ' ', ' '],
-            ['L1', 'L2', 'L3', 'F1', 'F2', 'F3', 'R1', 'R2', 'R3', 'B1', 'B2', 'B3'],
-            ['L4', 'L5', 'L6', 'F4', 'F5', 'F6', 'R4', 'R5', 'R6', 'B4', 'B5', 'B6'],
-            ['L7', 'L8', 'L9', 'F7', 'F8', 'F9', 'R7', 'R8', 'R9', 'B7', 'B8', 'B9'],
-            [' ', ' ', ' ', 'D1', 'D2', 'D3', ' ', ' ', ' '],
-            [' ', ' ', ' ', 'D4', 'D5', 'D6', ' ', ' ', ' '],
-            [' ', ' ', ' ', 'D7', 'D8', 'D9', ' ', ' ', ' '],
-        ]
+        global colors, cube_layout
 
         # Create buttons
         for row, row_data in enumerate(cube_layout):
@@ -78,6 +78,21 @@ class Cube2DWidget(QtWidgets.QWidget):
             if button.objectName() == button_name:
                 button.setStyleSheet(f'background-color: {color}; border:2px solid black')
                 self.button_colors[button_name] = color  # Update color in dictionary
+
+
+    def setScanedColors(self, color_dict):
+        for button in self.buttons:
+            if color_dict.get(button.objectName()):
+                button.setStyleSheet(f'background-color: {colors[color_dict.get(button.objectName())]}; border:2px solid black')
+                self.button_colors[button.objectName()] = colors[color_dict.get(button.objectName())]  # Update color in dictionary     
+
+
+    def resetColors(self):
+        global colors
+        for button in self.buttons:
+            button.setStyleSheet(f'background-color: {colors[button.objectName()[0]]}; border:2px solid black')
+            self.button_colors[button.objectName()] = colors[button.objectName()[0]]
+
 
 
     def buttonSize(self, widht, height):
