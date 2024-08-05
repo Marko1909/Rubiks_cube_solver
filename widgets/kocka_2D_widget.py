@@ -82,9 +82,10 @@ class Cube2DWidget(QtWidgets.QWidget):
 
     def setScanedColors(self, color_dict):
         for button in self.buttons:
-            if color_dict.get(button.objectName()):
-                button.setStyleSheet(f'background-color: {colors[color_dict.get(button.objectName())]}; border:2px solid black')
-                self.button_colors[button.objectName()] = colors[color_dict.get(button.objectName())]  # Update color in dictionary     
+            if button not in ['U5', 'L5', 'F5', 'R5', 'B5', 'D5']:
+                if color_dict.get(button.objectName()):
+                    button.setStyleSheet(f'background-color: {colors[color_dict.get(button.objectName())]}; border:2px solid black')
+                    self.button_colors[button.objectName()] = colors[color_dict.get(button.objectName())]  # Update color in dictionary     
 
 
     def resetColors(self):

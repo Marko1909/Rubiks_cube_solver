@@ -376,15 +376,33 @@ class Window(QtWidgets.QMainWindow):
         self.g_layout_funk = QtWidgets.QGridLayout(self.frame_funk)
         self.g_layout_funk.setContentsMargins(10, 10, 10, 20)
 
+        # Label za opis gumba kamera
+        self.label_kamera = QtWidgets.QLabel(self)
+        self.label_kamera.setFont(self.font)
+        self.label_kamera.setText("Skočni prozor kamere za snimanje kocke")
+        self.g_layout_funk.addWidget(self.label_kamera, 0, 0, 1, 2)
+
         # Gumb za snimanje kocke kamerom
         self.button_kamera = QtWidgets.QPushButton(self)
         self.button_kamera.setFont(self.font)
-        self.button_kamera.setText('Snimi kocku')
+        self.button_kamera.setText('Kamera')
         self.button_kamera.setFixedSize(120, 40)
         self.button_kamera.setStyleSheet("*{background-color: rgb(200,200,200)}")
         self.button_kamera.clicked.connect(self.snimi_kocku)
-        self.g_layout_funk.addWidget(self.button_kamera, 0, 0, 1, 1)
+        self.g_layout_funk.addWidget(self.button_kamera, 1, 0, 1, 1)
         
+        # Label za prikaz stanja kamere (upaljena/ugašena)
+        self.label_kamera_state = QtWidgets.QLabel(self)
+        self.label_kamera_state.setFixedSize(40, 40)
+        self.label_kamera_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
+        self.g_layout_funk.addWidget(self.label_kamera_state, 1, 1, 1, 1)
+
+        # Label za opis gumba rijesi
+        self.label_rijesi = QtWidgets.QLabel(self)
+        self.label_rijesi.setFont(self.font)
+        self.label_rijesi.setText("Pokretanje algoritma za rješavanje kocke")
+        self.g_layout_funk.addWidget(self.label_rijesi, 2, 0, 1, 2)
+
         # Gumb za pokretanje rjesavanja kocke
         self.button_rijesi = QtWidgets.QPushButton(self)
         self.button_rijesi.setFont(self.font)
@@ -392,16 +410,34 @@ class Window(QtWidgets.QMainWindow):
         self.button_rijesi.setFixedSize(120, 40)
         self.button_rijesi.setStyleSheet("*{background-color: rgb(200,200,200)}")
         self.button_rijesi.clicked.connect(self.rijesi_kocku)
-        self.g_layout_funk.addWidget(self.button_rijesi, 1, 0, 1, 1)
+        self.g_layout_funk.addWidget(self.button_rijesi, 3, 0, 1, 1)
 
-        # Gumb za pokretanje spajanja robota bluetoothom
+        # Label za opis gumba provjera konekcije
+        self.label_provjera = QtWidgets.QLabel(self)
+        self.label_provjera.setFont(self.font)
+        self.label_provjera.setText("Provjeravanje spojednog bluetooth uređaja")
+        self.g_layout_funk.addWidget(self.label_provjera, 4, 0, 1, 2)
+
+        # Gumb za provjeravanje spojednog bluetooth uređaja
         self.button_bluetooth = QtWidgets.QPushButton(self)
         self.button_bluetooth.setFont(self.font)
-        self.button_bluetooth.setText('Spajanje')
+        self.button_bluetooth.setText('Bluetooth')
         self.button_bluetooth.setFixedSize(120, 40)
         self.button_bluetooth.setStyleSheet("*{background-color: rgb(200,200,200)}")
         #self.button_bluetooth.clicked.connect(self.spajanje_bluetooth)
-        self.g_layout_funk.addWidget(self.button_bluetooth, 2, 0, 1, 1)
+        self.g_layout_funk.addWidget(self.button_bluetooth, 5, 0, 1, 1)
+
+        # Label za prikaz stanja bluetooth veze 
+        self.label_bluetooth_state = QtWidgets.QLabel(self)
+        self.label_bluetooth_state.setFixedSize(40, 40)
+        self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
+        self.g_layout_funk.addWidget(self.label_bluetooth_state, 5, 1, 1, 1)
+
+         # Label za opis gumba pokreni robot
+        self.label_slanje = QtWidgets.QLabel(self)
+        self.label_slanje.setFont(self.font)
+        self.label_slanje.setText("Slanje koraka i pokretanje robota")
+        self.g_layout_funk.addWidget(self.label_slanje, 6, 0, 1, 2)
 
         # Gumb za slanje korana na mikrokontroler i pokretanje slaganja
         self.button_slanje = QtWidgets.QPushButton(self)
@@ -410,7 +446,17 @@ class Window(QtWidgets.QMainWindow):
         self.button_slanje.setFixedSize(120, 40)
         self.button_slanje.setStyleSheet("*{background-color: rgb(200,200,200)}")
         #self.button_slanje.clicked.connect(self.slanje_koraka)
-        self.g_layout_funk.addWidget(self.button_slanje, 3, 0, 1, 1)
+        self.g_layout_funk.addWidget(self.button_slanje, 7, 0, 1, 1)
+
+         # Label za prikaz stanja robota (trenutno rjesava ili miruje) 
+        self.label_bluetooth_state = QtWidgets.QLabel(self)
+        self.label_bluetooth_state.setFixedSize(40, 40)
+        self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
+        self.g_layout_funk.addWidget(self.label_bluetooth_state, 7, 1, 1, 1)
+
+        self.label_spacer = QtWidgets.QLabel(self)
+        self.label_spacer.setFixedSize(10,250)
+        self.g_layout_funk.addWidget(self.label_spacer, 8, 0, 1, 2)
 
 
         # Label opis koraka
@@ -423,7 +469,7 @@ class Window(QtWidgets.QMainWindow):
             \nR - Desna crvena strana  \nB - Zadnja plava strana \nD - Donja žuta strana \n' - Rotacija suprotna kazaljci na satu \
             \n2 - Dvostruki okretaj stranice (180°)")
         self.label_opis_koraka.setStyleSheet("*{background-color: rgb(200,200,200)}")
-        self.g_layout_funk.addWidget(self.label_opis_koraka, 4, 0, 1, 2, QtCore.Qt.AlignCenter | QtCore.Qt.AlignBottom)
+        self.g_layout_funk.addWidget(self.label_opis_koraka, 9, 0, 1, 2, QtCore.Qt.AlignCenter | QtCore.Qt.AlignBottom)
         
 
 
@@ -448,6 +494,7 @@ class Window(QtWidgets.QMainWindow):
         self.frame_label.setFixedSize((1400 - int((1920 - new_width) / 1.19)), (300 - int((1920 - new_width) / 5)))
         self.frame_funk.setFixedSize((470 - int((1920 - new_width) / 6)), (914 - int((1920 - new_width) / 2.28)))
         self.label_opis_koraka.setFixedSize(400 - int((1920 - new_width) / 7), 200)
+        self.label_spacer.setFixedSize(10, 250 - int((1920 - new_width) / 3))
 
         self.label_ispis_boja.setFixedSize((1100 - int((1920 - new_width) / 1.2)), 40)
         self.label_ispis_koraka.setFixedSize((1100 - int((1920 - new_width) / 1.2)), 40)
@@ -517,12 +564,14 @@ class Window(QtWidgets.QMainWindow):
 
     # Funkcija za otvaranje popup prozora i snimanje kocke
     def snimi_kocku(self):
+        self.label_kamera_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(90,255,90) ")
         self.camera_widget.start_camera()
         self.popup.exec_()
         self.camera_widget.center_colors = []
         self.camera_widget.button_colors = {}
 
     def ugasi_kameru(self):
+        self.label_kamera_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
         button_colors = self.camera_widget.button_colors
         if len(self.camera_widget.center_colors) == 6:
             self.cube_widget_2d.setScanedColors(button_colors)
@@ -541,7 +590,6 @@ class Window(QtWidgets.QMainWindow):
             pokreti = [pokreti[i:i+99] for i in range(0, len(pokreti), 99)]
 
         pokreti = ' '.join(pokreti)
-
         self.label_ispis_pokreta.setText(pokreti)
 
 

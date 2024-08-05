@@ -33,20 +33,16 @@ def filter_overlapping_contours(contours):
     
     return filtered_contours
 
-# preset_colors_rgb = {
-#     'U': [235,235,235], #[255, 255, 255],
-#     'D': [195,195,60], #[175, 200, 10],
-#     'R': [240,0,0], #[255, 0, 0],
-#     'L': [200,110,10], #[200, 100, 10],
-#     'F': [50,210,65], #[0, 255, 0],
-#     'B': [30,95,255] #[0, 0, 255]
-# }
+preset_colors_rgb = {
+    'U': [235,235,235], #[255, 255, 255],
+    'D': [205,195,10], #[175, 200, 10],
+    'R': [240,0,0], #[255, 0, 0],
+    'L': [220,120, 0], #[200, 100, 10],
+    'F': [50,210,65], #[0, 255, 0],
+    'B': [30,95,255] #[0, 0, 255]
+}
 
-preset_sides = [U, D, R, L, F, B]
-preset_colors_rgb = {}
-
-
-# Layout polja kocke, redoslijed snimanja stranica 
+# Layout polja kocke, redoslijed snimanja stranica '
 cube_layout = [
     ['U1', 'U2', 'U3', 'U4', 'U5', 'U6', 'U7', 'U8', 'U9'],  # Gornja str
     ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9'],  # Prednja str
@@ -64,9 +60,7 @@ def closest_color(color, preset_colors):
     closest_color_name = None
     for name, preset_color in preset_colors.items():
         distance = np.linalg.norm(color - preset_color)
-        if color[0] > 160 and color[1] < 80:
-            closest_color_name = 'R'
-        elif distance < min_distance:
+        if distance < min_distance:
             min_distance = distance
             closest_color_name = name
     return closest_color_name
@@ -74,9 +68,9 @@ def closest_color(color, preset_colors):
 # Funkcija za obradu slika (Frame-a) i detekciju boja
 def process_frame(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    adjusted = cv2.convertScaleAbs(gray, alpha=1.2, beta=10)
-    blurred = cv2.GaussianBlur(adjusted, (9, 9), 0)
-    edges = cv2.Canny(blurred, 40, 30)   # lower, upper threshold 20, 25 
+    #adjusted = cv2.convertScaleAbs(gray, alpha=1.2, beta=5)  # Kontrast i svjetlina
+    blurred = cv2.GaussianBlur(gray, (9, 9), 0)
+    edges = cv2.Canny(blurred, 10, 25)   # lower, upper threshold 20, 25 
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     cube_contours = []
@@ -112,21 +106,15 @@ def process_frame(frame):
     rows = [positions_colors[i:i+3] for i in range(0, len(positions_colors), 3)]
 
     # Sortiranje svakog reda po horizontali-x (lijevo prema desno)
-    sorted_positions_colors = [sorted(row, key=lambda b: b[0][0]) for row in rows]
+    sorted_positions_colors = [sorted(row, key=lambda b: b[0][0], reverse=True) for row in rows]
 
      # Spajanje sortiranih redova u jednu listu
     sorted_positions_colors = [color for row in sorted_positions_colors for _, color in row]
     
     # Pretvorba detektiranih BGR boja u RGB
     colors_rgb = [cv2.cvtColor(np.uint8([[color]]), cv2.COLOR_BGR2RGB)[0][0] for color in sorted_positions_colors]
-
-    if colors_rgb == 9:
-        preset_colors_rgb[preset_sides[len(preset_colors_rgb)]] = colors_rgb[4]
-
-    # Postavljanje detektirane boje s najbližom preset bojom
-    #closest_colors = [preset_colors_rgb[closest_color(color, preset_colors_rgb)] for color in colors_rgb]
     
-    return frame, colors_rgb #closest_colors
+    return frame, colors_rgb
 
 
 
@@ -155,7 +143,7 @@ class CameraWidget(QtWidgets.QWidget):
         
         self.center_colors = []
         self.button_colors = {}  # Spremanje boja svakog polja
-
+        self.scaned_colors = []
 
     def start_camera(self):
         self.cap = cv2.VideoCapture(0)
@@ -172,7 +160,7 @@ class CameraWidget(QtWidgets.QWidget):
     def update_frame(self):
         ret, frame = self.cap.read()
         if ret:
-            frame = frame[0:480, 100:580]
+            frame = frame[50:580, 100:580]
             frame = cv2.flip(frame, 1)
             
             processed_frame, closest_colors = process_frame(frame)
@@ -182,23 +170,49 @@ class CameraWidget(QtWidgets.QWidget):
                            
             self.image_label.setPixmap(QtGui.QPixmap.fromImage(image))
             
-
-
-            
-            # Zapis boja za postavljanje 2D prikaza kocke
             if len(closest_colors) == 9:
-                center_color = closest_colors[4]
-                if all(np.linalg.norm(center_color - np.array(c)) > 10 for c in self.center_colors):
-                    self.center_colors.append(center_color)
+                if len(self.center_colors) == 0:
+                    preset_colors_rgb["U"] = closest_colors[4].tolist()
 
-                    for x, tile in enumerate(cube_layout[(len(self.center_colors) - 1)]):
+                # Postavljanje detektirane boje s najbližom preset bojom
+                compared = [preset_colors_rgb[closest_color(color, preset_colors_rgb)] for color in closest_colors]
+                center_color = compared[4]
+
+                if all(np.linalg.norm(center_color - np.array(c)) > 10 for c in self.center_colors):
+                    self.center_colors.append(closest_colors[4].tolist())
+                    self.scaned_colors.append(closest_colors)
+
+                    if len(self.center_colors) == 1:
+                        preset_colors_rgb["U"] = closest_colors[4].tolist()
+                    elif len(self.center_colors) == 2:
+                        preset_colors_rgb["D"] = closest_colors[4].tolist()
+                    elif len(self.center_colors) == 3:
+                        preset_colors_rgb["R"] = closest_colors[4].tolist()
+                    elif len(self.center_colors) == 4:
+                        preset_colors_rgb["L"] = closest_colors[4].tolist()
+                    elif len(self.center_colors) == 5:
+                        preset_colors_rgb["F"] = closest_colors[4].tolist()
+                    elif len(self.center_colors) == 6:
+                        preset_colors_rgb["B"] = closest_colors[4].tolist()
+
+                    self.text_label.setText(f"Stranica {len(self.center_colors)} snimljena.")
+
+
+
+
+            # Zapis boja za postavljanje 2D prikaza kocke
+            if self.scaned_colors == 6:
+                for side, colors in enumerate(self.scaned_colors):
+                    # Postavljanje detektirane boje s najbližom preset bojom
+                    compared = [preset_colors_rgb[closest_color(color, preset_colors_rgb)] for color in colors]
+                    
+                    for x, tile in enumerate(cube_layout[side]):
                         face = tile[0]
                         for side, color in preset_colors_rgb.items():
-                            if color == closest_colors[x]:
+                            if color == colors[x]:
                                 self.button_colors[tile] = side
-                    print(closest_colors)
-                    #print(self.button_colors)
-                    self.text_label.setText(f"Stranica {len(self.center_colors)} snimljena.")
+
+                    print(colors)
                 
 
 
