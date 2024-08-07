@@ -34,7 +34,7 @@ def filter_overlapping_contours(contours):
     return filtered_contours
 
 preset_colors_rgb = {
-    'U': [235,235,235], #[255, 255, 255],
+    'U': [225,225,225], #[255, 255, 255],
     'D': [205,195,10], #[175, 200, 10],
     'R': [240,0,0], #[255, 0, 0],
     'L': [220,120, 0], #[200, 100, 10],
@@ -49,7 +49,7 @@ cube_layout = [
     ['R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9'],  # Desna str
     ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9'],  # Zadnja str
     ['L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9'],  # Lijeva str
-    ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9'],  # Donja str
+    ['D7', 'D4', 'D1', 'D8', 'D5', 'D2', 'D9', 'D6', 'D3'],  # Donja str
 
 ]
 
@@ -60,7 +60,9 @@ def closest_color(color, preset_colors):
     closest_color_name = None
     for name, preset_color in preset_colors.items():
         distance = np.linalg.norm(color - preset_color)
-        if distance < min_distance:
+        if color[0] > 160 and color[1] < 80:
+            closest_color_name = 'R'
+        elif distance < min_distance:
             min_distance = distance
             closest_color_name = name
     return closest_color_name
@@ -68,8 +70,7 @@ def closest_color(color, preset_colors):
 # Funkcija za obradu slika (Frame-a) i detekciju boja
 def process_frame(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    #adjusted = cv2.convertScaleAbs(gray, alpha=1.2, beta=5)  # Kontrast i svjetlina
-    blurred = cv2.GaussianBlur(gray, (9, 9), 0)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     edges = cv2.Canny(blurred, 10, 25)   # lower, upper threshold 20, 25 
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -113,8 +114,11 @@ def process_frame(frame):
     
     # Pretvorba detektiranih BGR boja u RGB
     colors_rgb = [cv2.cvtColor(np.uint8([[color]]), cv2.COLOR_BGR2RGB)[0][0] for color in sorted_positions_colors]
+
+    # Postavljanje detektirane boje s najbližom preset bojom
+    closest_colors = [preset_colors_rgb[closest_color(color, preset_colors_rgb)] for color in colors_rgb]
     
-    return frame, colors_rgb
+    return frame, closest_colors
 
 
 
@@ -123,16 +127,27 @@ class CameraWidget(QtWidgets.QWidget):
         super().__init__()
         self.setWindowTitle("Camera Application")
         self.setGeometry(100, 100, 800, 600)
-
+        
         self.layout = QtWidgets.QVBoxLayout()
 
         self.image_label = QtWidgets.QLabel()
         self.layout.addWidget(self.image_label)
 
-        self.text_label = QtWidgets.QLabel()
+        self.h_layout = QtWidgets.QHBoxLayout()
+        self.layout.addLayout(self.h_layout)
+
+        self.text_label = QtWidgets.QLabel(self)
         self.text_label.setFont(QtGui.QFont('Times New Roman', 12))
         self.text_label.setText("Nema smiljneih stranica.")
-        self.layout.addWidget(self.text_label)
+        self.h_layout.addWidget(self.text_label)
+
+        self.button_save = QtWidgets.QPushButton(self)
+        self.button_save.setFont(QtGui.QFont('Times New Roman', 12))
+        self.button_save.setText('Spremi')
+        self.button_save.setFixedSize(120, 40)
+        self.button_save.setStyleSheet("*{background-color: rgb(200,200,200)}")
+        self.button_save.clicked.connect(self.rucno_spremi_stranicu)
+        self.h_layout.addWidget(self.button_save)
 
         self.setLayout(self.layout)
         
@@ -142,8 +157,8 @@ class CameraWidget(QtWidgets.QWidget):
         self.cap = None
         
         self.center_colors = []
-        self.button_colors = {}  # Spremanje boja svakog polja
-        self.scaned_colors = []
+        self.button_colors = {}
+        self.latest_detected_side = []
 
     def start_camera(self):
         self.cap = cv2.VideoCapture(0)
@@ -170,51 +185,21 @@ class CameraWidget(QtWidgets.QWidget):
                            
             self.image_label.setPixmap(QtGui.QPixmap.fromImage(image))
             
+            # Zapis boja za postavljanje 2D prikaza kocke
             if len(closest_colors) == 9:
-                if len(self.center_colors) == 0:
-                    preset_colors_rgb["U"] = closest_colors[4].tolist()
-
-                # Postavljanje detektirane boje s najbližom preset bojom
-                compared = [preset_colors_rgb[closest_color(color, preset_colors_rgb)] for color in closest_colors]
-                center_color = compared[4]
+                center_color = closest_colors[4]
+                self.latest_detected_side = closest_colors
 
                 if all(np.linalg.norm(center_color - np.array(c)) > 10 for c in self.center_colors):
-                    self.center_colors.append(closest_colors[4].tolist())
-                    self.scaned_colors.append(closest_colors)
-
-                    if len(self.center_colors) == 1:
-                        preset_colors_rgb["U"] = closest_colors[4].tolist()
-                    elif len(self.center_colors) == 2:
-                        preset_colors_rgb["D"] = closest_colors[4].tolist()
-                    elif len(self.center_colors) == 3:
-                        preset_colors_rgb["R"] = closest_colors[4].tolist()
-                    elif len(self.center_colors) == 4:
-                        preset_colors_rgb["L"] = closest_colors[4].tolist()
-                    elif len(self.center_colors) == 5:
-                        preset_colors_rgb["F"] = closest_colors[4].tolist()
-                    elif len(self.center_colors) == 6:
-                        preset_colors_rgb["B"] = closest_colors[4].tolist()
-
-                    self.text_label.setText(f"Stranica {len(self.center_colors)} snimljena.")
-
-
-
-
-            # Zapis boja za postavljanje 2D prikaza kocke
-            if self.scaned_colors == 6:
-                for side, colors in enumerate(self.scaned_colors):
-                    # Postavljanje detektirane boje s najbližom preset bojom
-                    compared = [preset_colors_rgb[closest_color(color, preset_colors_rgb)] for color in colors]
-                    
-                    for x, tile in enumerate(cube_layout[side]):
+                    self.center_colors.append(center_color)
+                    for x, tile in enumerate(cube_layout[(len(self.center_colors) - 1)]):
                         face = tile[0]
                         for side, color in preset_colors_rgb.items():
-                            if color == colors[x]:
+                            if color == closest_colors[x]:
                                 self.button_colors[tile] = side
-
-                    print(colors)
+                    
+                    self.text_label.setText(f"Stranica {len(self.center_colors)} snimljena.")
                 
-
 
     def closeEvent(self, event):
         self.cap.release()
@@ -225,6 +210,13 @@ class CameraWidget(QtWidgets.QWidget):
         self.setMaximumSize(width, height)
         self.resize(width, height)
 
-    def snimljena_stranica(self):
-        return center_colors
-
+    def rucno_spremi_stranicu(self):
+        center_color = self.latest_detected_side[4]
+        self.center_colors.append(center_color)
+        for x, tile in enumerate(cube_layout[(len(self.center_colors) - 1)]):
+            face = tile[0]
+            for side, color in preset_colors_rgb.items():
+                if color == self.latest_detected_side[x]:
+                    self.button_colors[tile] = side
+        
+        self.text_label.setText(f"Stranica {len(self.center_colors)} snimljena.")

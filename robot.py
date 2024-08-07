@@ -7,10 +7,10 @@ import re
 
 # Koraci se izvrsavaju redoslijedom kako su napisani u rijecniku
 
-moves_dict = {'U':'F2R1S3', 'U2':'F2R1S3R1S3', "U'":'F2S1R3',
-              'D':'R1S3',   'D2':'R1S3R1S3',   "D'":'S1R3',
-              'F':'F1R1S3', 'F2':'F1R1S3R1S3', "F'":'F1S1R3',
-              'B':'F3R1S3', 'B2':'F3R1S3R1S3', "B'":'F3S1R3',
+moves_dict = {'U':'F2S3R1', 'U2':'F2S3R1S3R1', "U'":'F2S1R3',
+              'D':'S3R1',   'D2':'S3R1S3R1',   "D'":'S1R3',
+              'F':'F1S3R1', 'F2':'F1S3R1S3R1', "F'":'F1S1R3',
+              'B':'F3S3R1', 'B2':'F3S3R1S3R1', "B'":'F3S1R3',
               'L':'S3F3R1', 'L2':'S3F3R1S3R1', "L'":'S1F1R3',
               'R':'S3F1R1', 'R2':'S3F1R1S3R1', "R'":'S1F3R3'}
 
@@ -188,7 +188,7 @@ def count_moves(moves):
     return robot_tot_moves            # total amount of robot moves is returned
 
 
-def robot_required_moves(solution):
+def robot_moves(solution):
     """ This function splits the cube manouvre from Kociemba solver string, and generates a dict with all the robot movements."""
     
     global h_faces,v_faces

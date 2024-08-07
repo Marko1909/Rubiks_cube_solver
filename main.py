@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import kociemba
 import re
+import bluetooth
+import time
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtOpenGL import QGLWidget
@@ -11,7 +13,7 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
 from widgets import CameraWidget, Cube3DWidget, Cube2DWidget
-from robot import robot_required_moves
+from robot import robot_moves
 
 # Izabrana boja za postavljanje boje polja
 izabrana_boja = ()
@@ -34,6 +36,7 @@ class Window(QtWidgets.QMainWindow):
         self.setMinimumSize(1280, 720)
         self.initUI()
         self.showMaximized()
+        self.sock = None
 
 
     def initUI(self):
@@ -415,7 +418,7 @@ class Window(QtWidgets.QMainWindow):
         # Label za opis gumba provjera konekcije
         self.label_provjera = QtWidgets.QLabel(self)
         self.label_provjera.setFont(self.font)
-        self.label_provjera.setText("Provjeravanje spojednog bluetooth uređaja")
+        self.label_provjera.setText("Spajanje bluetooth uređaja")
         self.g_layout_funk.addWidget(self.label_provjera, 4, 0, 1, 2)
 
         # Gumb za provjeravanje spojednog bluetooth uređaja
@@ -424,7 +427,7 @@ class Window(QtWidgets.QMainWindow):
         self.button_bluetooth.setText('Bluetooth')
         self.button_bluetooth.setFixedSize(120, 40)
         self.button_bluetooth.setStyleSheet("*{background-color: rgb(200,200,200)}")
-        #self.button_bluetooth.clicked.connect(self.spajanje_bluetooth)
+        self.button_bluetooth.clicked.connect(self.spajanje_bluetooth)
         self.g_layout_funk.addWidget(self.button_bluetooth, 5, 0, 1, 1)
 
         # Label za prikaz stanja bluetooth veze 
@@ -442,17 +445,17 @@ class Window(QtWidgets.QMainWindow):
         # Gumb za slanje korana na mikrokontroler i pokretanje slaganja
         self.button_slanje = QtWidgets.QPushButton(self)
         self.button_slanje.setFont(self.font)
-        self.button_slanje.setText('Pokreni robot')
+        self.button_slanje.setText('Pošalji korake')
         self.button_slanje.setFixedSize(120, 40)
         self.button_slanje.setStyleSheet("*{background-color: rgb(200,200,200)}")
-        #self.button_slanje.clicked.connect(self.slanje_koraka)
+        self.button_slanje.clicked.connect(self.slanje_koraka)
         self.g_layout_funk.addWidget(self.button_slanje, 7, 0, 1, 1)
 
          # Label za prikaz stanja robota (trenutno rjesava ili miruje) 
-        self.label_bluetooth_state = QtWidgets.QLabel(self)
-        self.label_bluetooth_state.setFixedSize(40, 40)
-        self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
-        self.g_layout_funk.addWidget(self.label_bluetooth_state, 7, 1, 1, 1)
+        self.label_slanje_state = QtWidgets.QLabel(self)
+        self.label_slanje_state.setFixedSize(40, 40)
+        self.label_slanje_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
+        self.g_layout_funk.addWidget(self.label_slanje_state, 7, 1, 1, 1)
 
         self.label_spacer = QtWidgets.QLabel(self)
         self.label_spacer.setFixedSize(10,250)
@@ -584,7 +587,7 @@ class Window(QtWidgets.QMainWindow):
         koraci = kociemba.solve(self.cube_widget_2d.tileString())
         self.label_ispis_boja.setText(self.cube_widget_2d.tileString())
         self.label_ispis_koraka.setText(koraci)
-        pokreti = robot_required_moves(koraci)
+        pokreti = robot_moves(koraci)
 
         if len(pokreti) > 100:
             pokreti = [pokreti[i:i+99] for i in range(0, len(pokreti), 99)]
@@ -647,6 +650,46 @@ class Window(QtWidgets.QMainWindow):
 
             self.cube_widget_3d.rotateSide(new_move, 1)
             self.cube_widget_3d.current_index -= 1
+
+    # Funkcija za spajanje bluetooth uređaja
+    def spajanje_bluetooth(self):
+        self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(90,255,90) ")
+        time.sleep(0.1)
+        nearby_devices = bluetooth.discover_devices(duration=4, lookup_names=True)
+        adresa = ""
+
+        for addr, name in nearby_devices:
+            if name == "LolinD32":
+                adresa = addr
+        
+        if adresa is None:
+            self.label_provjera.setText("Neuspješno spajanje uređaja")
+            self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(220,0,0) ")
+            return
+        else:
+            self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(90,255,90) ")
+
+        port = 1  # Standard port for RFCOMM
+        self.sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+        self.sock.connect((adresa, port))
+        self.label_provjera.setText("Connected to Lolin D32")
+
+    # Funkcija za slanje koraka na mikrokontroler putem bluetooth veze
+    def slanje_koraka(self):
+        if self.sock is None:
+            self.label_slanje_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(220,0,0) ")
+            return
+
+        message = self.label_ispis_pokreta.text()
+        message = message.replace(" ", "") 
+
+        if message:
+            self.sock.send(message)
+            self.label_slanje_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(90,255,90) ")
+            time.sleep(2)
+            self.label_slanje_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
+        else:
+            self.label_slanje_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
 
 
 
