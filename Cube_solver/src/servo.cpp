@@ -40,20 +40,12 @@ void setup1() {
 
 void loop1() {
     if (SerialBT1.available()) {
-        if (SerialBT1.readString() != "ping") {
+        Serial.println(SerialBT1.readString());
+        //if (SerialBT1.read() != 'ping') {
             remaining_moves1 = SerialBT1.readString();
             Serial.println(remaining_moves1);
             Serial.println(remaining_moves1.length());
-        }
-    }
-
-    if (remaining_moves1.length() > 0 && true) {
-        digitalWrite(GREEN_LED, HIGH);
-        Serial.println("Green ON");
-        delay(500);
-        Serial.println("Green OFF");
-        digitalWrite(GREEN_LED, LOW);
-        delay(500);
+        //}
     }
 }
 

@@ -5,13 +5,12 @@ from PyQt5 import QtCore
 class BluetoothWorker(QtCore.QThread):
     connection_status = QtCore.pyqtSignal(bool, str)  # Emit True/False and message
 
-    def __init__(self, target_name="LolinD32"):
+    def __init__(self):
         super().__init__()
-        self.target_name = target_name
         self.sock = None
 
     def run(self):
-        nearby_devices = bluetooth.discover_devices(duration=4, lookup_names=True)
+        nearby_devices = bluetooth.discover_devices(duration=8, lookup_names=True)
         adresa = ""
 
         for addr, name in nearby_devices:
@@ -28,4 +27,4 @@ class BluetoothWorker(QtCore.QThread):
             self.sock.connect((addr, port))
             self.connection_status.emit(True, "Spojen na LolinD32")
         except:
-            self.connection_status.emit(False, "Nema konekcije")
+            self.connection_status.emit(False, "Neuspješno")

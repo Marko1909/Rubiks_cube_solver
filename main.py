@@ -468,13 +468,6 @@ class Window(QtWidgets.QMainWindow):
             \n2 - Dvostruki okretaj stranice (180°)")
         self.label_opis_koraka.setStyleSheet("*{background-color: rgb(200,200,200)}")
         self.g_layout_funk.addWidget(self.label_opis_koraka, 9, 0, 1, 2, QtCore.Qt.AlignCenter | QtCore.Qt.AlignBottom)
-        
-
-        # Timer za privjeru statusa konekcije
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.check_connection)
-        self.timer.start(4000)  # Provjera svake 4 sekunde
-
 
 
 # Funkcije
@@ -674,7 +667,7 @@ class Window(QtWidgets.QMainWindow):
         if self.sock is None:
             self.label_slanje_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(220,0,0) ")
             return
-
+        
         message = self.label_ispis_pokreta.text()
         message = message.replace(" ", "") 
 
@@ -684,16 +677,6 @@ class Window(QtWidgets.QMainWindow):
         else:
             self.label_slanje_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
 
-    # Funkcija za provjeru konekcije   
-    def check_connection(self):
-        if self.sock:
-            try:
-                self.sock.send("ping".encode('utf-8'))
-                self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(20,40,255) ")
-            except:
-                self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
-                self.sock.close()
-                self.sock = None
 
 
 app = QtWidgets.QApplication(sys.argv)

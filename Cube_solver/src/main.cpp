@@ -24,16 +24,16 @@
 const int t_servo_flip = 54;         // top servo position to flip the cube
 const int t_servo_open = 68;         // top servo position to free up the top cover from the cube, and keep the lifter out of the way
 const int t_servo_close = 76;            // top servo position to constrain the cube mid and top layer
-const int t_flip_to_close_time = 900;         // time needed to the servo to lower the cover/flipper from flip to close position
+const int t_flip_to_close_time = 800;         // time needed to the servo to lower the cover/flipper from flip to close position
 const int t_close_to_flip_time = 1000;        // time needed to the servo to raise the cover/flipper from close to flip position
-const int t_flip_open_time = 800;             // time needed to the servo to raise/lower the flipper between open and flip positions
+const int t_flip_open_time = 600;             // time needed to the servo to raise/lower the flipper between open and flip positions
 const int t_open_close_time = 400;            // time needed to the servo to raise/lower the flipper between open and close positions
 
 const int b_servo_CCW = 51;                   // bottom servo position when fully CW 
 const int b_home = 76;                        // bottom servo home position
 const int b_servo_CW = 101;                   // bottom servo position when fully CCW
-const int b_spin_time = 900;                 // time needed to the bottom servo to spin about 90deg
-const int b_rotate_time = 1000;               // time needed to the bottom servo to rotate about 90deg
+const int b_spin_time = 800;                 // time needed to the bottom servo to spin about 90deg
+const int b_rotate_time = 800;               // time needed to the bottom servo to rotate about 90deg
 const int b_rel_time = 100;                   // time needed to the servo to rotate slightly back, to release tensions
 
 const int b_home_from_CW = b_home - 2;        // bottom servo extra home position, when moving back from full CW
@@ -101,10 +101,19 @@ void loop() {
     }
     
     if (SerialBT.available()) {
-        if (SerialBT.readString() != "ping") {
-            remaining_moves = SerialBT.readString();
-        }
+        remaining_moves = SerialBT.readString();
     }
+
+    if (digitalRead(BUTTON) == HIGH && remaining_moves.length() > 0) {
+            stop_servos = !stop_servos;  // Toggle the stop_servos variable
+            delay(200);  // Debounce delay
+
+        }
+
+    if (!stop_servos && remaining_moves.length() > 0) {
+            digitalWrite(GREEN_LED, HIGH);
+            servo_solve_cube(remaining_moves);
+        }
 
     if (remaining_moves.length() > 0 && stop_servos) {
         digitalWrite(GREEN_LED, HIGH);
@@ -117,22 +126,7 @@ void loop() {
         stop_servos = true;
         digitalWrite(GREEN_LED, LOW);
     }
-
-    if (digitalRead(BUTTON) == HIGH && remaining_moves.length() > 0) {
-        stop_servos = !stop_servos;  // Toggle the stop_servos variable
-        if (stop_servos){
-            digitalWrite(GREEN_LED, LOW);
-        }
-        delay(200);  // Debounce delay
-
-    }
-
-    if (!stop_servos && remaining_moves.length() > 0) {
-        digitalWrite(GREEN_LED, HIGH);
-        servo_solve_cube(remaining_moves);
-    }
-
-    
+   
 }
 
 // Delay koji ne blokira ostale naredbe
