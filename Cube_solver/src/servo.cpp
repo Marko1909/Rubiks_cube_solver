@@ -26,20 +26,35 @@ void swipe_and_center();
 String remaining_moves1 = "";
 BluetoothSerial SerialBT1;
 
+
+
 void setup1() {  
     Serial.begin(9600);
-    delay(5000);
+    delay(4000);
     Serial.println("Start connectiong...");
     SerialBT1.begin("LolinD32");
     Serial.println("The device started, now you can pair it with bluetooth!");
-    remaining_moves1 = "a9b2c3d4e5f6g7h8i9j0";
+    //remaining_moves1 = "a9b2c3d4e5f6g7h8i9j0";
 }
 
 
 void loop1() {
-    Serial.println(remaining_moves1);
-    remaining_moves1[1] -= 1;
-    delay(2000);
+    if (SerialBT1.available()) {
+        if (SerialBT1.readString() != "ping") {
+            remaining_moves1 = SerialBT1.readString();
+            Serial.println(remaining_moves1);
+            Serial.println(remaining_moves1.length());
+        }
+    }
+
+    if (remaining_moves1.length() > 0 && true) {
+        digitalWrite(GREEN_LED, HIGH);
+        Serial.println("Green ON");
+        delay(500);
+        Serial.println("Green OFF");
+        digitalWrite(GREEN_LED, LOW);
+        delay(500);
+    }
 }
 
 

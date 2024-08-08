@@ -3,8 +3,8 @@ import cv2
 import numpy as np
 import kociemba
 import re
-import bluetooth
 import time
+import bluetooth
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtOpenGL import QGLWidget
@@ -14,6 +14,8 @@ from OpenGL.GLU import *
 
 from widgets import CameraWidget, Cube3DWidget, Cube2DWidget
 from robot import robot_moves
+from bt_connection import BluetoothWorker
+
 
 # Izabrana boja za postavljanje boje polja
 izabrana_boja = ()
@@ -36,6 +38,7 @@ class Window(QtWidgets.QMainWindow):
         self.setMinimumSize(1280, 720)
         self.initUI()
         self.showMaximized()
+        self.bt_worker = None
         self.sock = None
 
 
@@ -475,6 +478,10 @@ class Window(QtWidgets.QMainWindow):
         self.g_layout_funk.addWidget(self.label_opis_koraka, 9, 0, 1, 2, QtCore.Qt.AlignCenter | QtCore.Qt.AlignBottom)
         
 
+        # Timer za privjeru statusa konekcije
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.check_connection)
+        self.timer.start(4000)  # Provjera svake 4 sekunde
 
 
 
@@ -654,25 +661,21 @@ class Window(QtWidgets.QMainWindow):
     # Funkcija za spajanje bluetooth uređaja
     def spajanje_bluetooth(self):
         self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(90,255,90) ")
-        time.sleep(0.1)
-        nearby_devices = bluetooth.discover_devices(duration=4, lookup_names=True)
-        adresa = ""
-
-        for addr, name in nearby_devices:
-            if name == "LolinD32":
-                adresa = addr
         
-        if adresa is None:
-            self.label_provjera.setText("Neuspješno spajanje uređaja")
+        self.bt_worker = BluetoothWorker()
+        self.bt_worker.connection_status.connect(self.on_connection_status)
+        self.bt_worker.start()
+
+    def on_connection_status(self, success, message):
+        if success:
+            self.sock = self.bt_worker.sock
+            self.label_provjera.setText(message)
+            self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(45,90,255) ")  
+        else:
+            self.label_provjera.setText(message)
             self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(220,0,0) ")
             return
-        else:
-            self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(90,255,90) ")
 
-        port = 1  # Standard port for RFCOMM
-        self.sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-        self.sock.connect((adresa, port))
-        self.label_provjera.setText("Connected to Lolin D32")
 
     # Funkcija za slanje koraka na mikrokontroler putem bluetooth veze
     def slanje_koraka(self):
@@ -686,11 +689,19 @@ class Window(QtWidgets.QMainWindow):
         if message:
             self.sock.send(message)
             self.label_slanje_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(90,255,90) ")
-            time.sleep(2)
-            self.label_slanje_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
         else:
             self.label_slanje_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
 
+    # Funkcija za provjeru konekcije   
+    def check_connection(self):
+        if self.sock:
+            try:
+                self.sock.send("ping".encode('utf-8'))
+                self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(20,40,255) ")
+            except:
+                self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
+                self.sock.close()
+                self.sock = None
 
 
 app = QtWidgets.QApplication(sys.argv)

@@ -299,7 +299,7 @@ class Cube3DWidget(QtWidgets.QOpenGLWidget):
                 
                 self.current_index += 1
 
-                solve_timer.start(2500)  # Timer 2 sec
+                solve_timer.start(3000)  # Timer 2 sec
                 solve_timer.timeout.connect(lambda: self.animated_solve(library))
 
             if self.current_index == len(library):

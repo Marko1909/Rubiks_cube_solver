@@ -49,6 +49,7 @@ bool b_servo_CCW_pos = false;  // Varijabla za poziciju donjeg servo motora na -
 bool stop_servos = true;
 
 // Funckije
+void customDelay(unsigned long delayTime);
 void flip_up();
 void flip_to_open();
 void flip_to_close();
@@ -86,10 +87,8 @@ void setup() {
     ledcWrite(SERVO_T, 68);
 
     delay(4000);
-    Serial.println("Start connectiong...");
-    SerialBT.begin("LolinD32");
-    Serial.println("The device started, now you can pair it with bluetooth!");
 
+    SerialBT.begin("LolinD32");
 
 }
 
@@ -102,7 +101,16 @@ void loop() {
     }
     
     if (SerialBT.available()) {
-        remaining_moves = SerialBT.readString();
+        if (SerialBT.readString() != "ping") {
+            remaining_moves = SerialBT.readString();
+        }
+    }
+
+    if (remaining_moves.length() > 0 && stop_servos) {
+        digitalWrite(GREEN_LED, HIGH);
+        customDelay(500);
+        digitalWrite(GREEN_LED, LOW);
+        customDelay(500);
     }
 
     if (remaining_moves.length() == 0) {
@@ -144,18 +152,16 @@ void customDelay(unsigned long delayTime) {
 
 
 void flip_up() {
-    if (!stop_servos) {
-        if (b_servo_stopped) {
-            b_servo_operable = false;
-            if (t_top_cover == 0) {
-                ledcWrite(SERVO_T, t_servo_flip);
-                customDelay(t_close_to_flip_time);
-            } else if (t_top_cover == 1) {
-                ledcWrite(SERVO_T, t_servo_flip);
-                customDelay(t_flip_open_time);
-            }
-            t_top_cover = 2;
+    if (b_servo_stopped) {
+        b_servo_operable = false;
+        if (t_top_cover == 0) {
+            ledcWrite(SERVO_T, t_servo_flip);
+            customDelay(t_close_to_flip_time);
+        } else if (t_top_cover == 1) {
+            ledcWrite(SERVO_T, t_servo_flip);
+            customDelay(t_flip_open_time);
         }
+        t_top_cover = 2;
     }
 }
 
@@ -316,6 +322,10 @@ void servo_solve_cube(String moves) {
             int flips = moves[i + 1] - '0';  // number of flips
 
             for (int flip = 0; flip < flips; flip++) {  // iterates over the number of requested flips
+                if (stop_servos) {                      // case there is a stop request for servos
+                    break;
+                }
+
                 flip_up();  // lifter is operated to flip the cube
 
                 if (flip < (flips - 1)) {  // case there are further flippings to do

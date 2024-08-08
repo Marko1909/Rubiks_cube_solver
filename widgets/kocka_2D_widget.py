@@ -64,7 +64,6 @@ class Cube2DWidget(QtWidgets.QWidget):
                     self.button_colors[tile] = colors[face]  # Add button to dictionary with color
 
 
-
     def emitCustomSignal(self):
         button = self.sender()
         self.buttonClickedSignal.emit(button.objectName())
@@ -73,33 +72,32 @@ class Cube2DWidget(QtWidgets.QWidget):
         self.buttonClickedSignal.connect(slot)
 
 
+    # Funkcija za postavljanje boje pojedinačnih polja pritiskom gumba
     def setColor(self, button_name, color):
         for button in self.buttons:
             if button.objectName() == button_name:
                 button.setStyleSheet(f'background-color: {color}; border:2px solid black')
                 self.button_colors[button_name] = color  # Update color in dictionary
 
-
+    # Funkcija za postavljanje skeniranih boja
     def setScanedColors(self, color_dict):
         for button in self.buttons:
-            if button not in ['U5', 'L5', 'F5', 'R5', 'B5', 'D5']:
+            if button.objectName() not in ['U5', 'L5', 'F5', 'R5', 'B5', 'D5']:
                 if color_dict.get(button.objectName()):
                     button.setStyleSheet(f'background-color: {colors[color_dict.get(button.objectName())]}; border:2px solid black')
                     self.button_colors[button.objectName()] = colors[color_dict.get(button.objectName())]  # Update color in dictionary     
 
-
+    # Funkcija za resetiranje boja polja
     def resetColors(self):
         global colors
         for button in self.buttons:
             button.setStyleSheet(f'background-color: {colors[button.objectName()[0]]}; border:2px solid black')
             self.button_colors[button.objectName()] = colors[button.objectName()[0]]
 
-
-
+    # Funkccija za promjenu veličine buttona
     def buttonSize(self, widht, height):
         for button in self.buttons:
             button.setFixedSize(QtCore.QSize(int(widht), int(height)))
-
 
     # Funkcija za dobivanje boja polja za kociemba algoritam
     def tileString(self):
