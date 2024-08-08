@@ -1,16 +1,8 @@
 import sys
-import cv2
-import numpy as np
 import kociemba
 import re
-import time
-import bluetooth
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtOpenGL import QGLWidget
-from OpenGL.GL import *
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
 
 from widgets import CameraWidget, Cube3DWidget, Cube2DWidget
 from robot import robot_moves

@@ -138,7 +138,7 @@ class CameraWidget(QtWidgets.QWidget):
 
         self.text_label = QtWidgets.QLabel(self)
         self.text_label.setFont(QtGui.QFont('Times New Roman', 12))
-        self.text_label.setText("Nema smiljneih stranica.")
+        self.text_label.setText("Nema smiljenih stranica.")
         self.h_layout.addWidget(self.text_label)
 
         self.button_save = QtWidgets.QPushButton(self)
@@ -162,7 +162,7 @@ class CameraWidget(QtWidgets.QWidget):
 
     def start_camera(self):
         self.cap = cv2.VideoCapture(0)
-        self.timer.start(20)
+        self.timer.start(10)
 
     def stop_camera(self):
         if self.cap:
