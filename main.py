@@ -5,7 +5,7 @@ import re
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from widgets import CameraWidget, Cube3DWidget, Cube2DWidget
-from robot import robot_moves
+from robot_koraci import robot_moves
 from bt_connection import BluetoothWorker
 
 
@@ -203,14 +203,14 @@ class Window(QtWidgets.QMainWindow):
         self.g_layout_okreni.addWidget(self.line, 3, 0, 1, 1, QtCore.Qt.AlignCenter)
 
 
-        # Label gumbi za pokretanje animacije rjesavanja
+        # Label gumbi za pokretanje animacije rješavanja
         self.label_animacija = QtWidgets.QLabel(self)
         self.label_animacija.setFont(self.font)
         self.label_animacija.setWordWrap(True)
         self.label_animacija.setText("Upravljanje animacijom")
         self.g_layout_okreni.addWidget(self.label_animacija, 4, 0, 1, 2, QtCore.Qt.AlignCenter)
 
-        # Gumb za pokretanje animacije rjesavanja
+        # Gumb za pokretanje animacije rješavanja
         self.button_pokreni_animaciju = QtWidgets.QPushButton(self)
         self.button_pokreni_animaciju.setFixedSize(56, 56)
         self.button_pokreni_animaciju.setIcon(QtGui.QIcon("ikone\Kreni.png")) #icon
@@ -218,7 +218,7 @@ class Window(QtWidgets.QMainWindow):
         self.button_pokreni_animaciju.clicked.connect(self.pokreni_animaciju)
         self.g_layout_okreni.addWidget(self.button_pokreni_animaciju, 5, 0, 1, 1)
         
-        # Gumb za zaustavljanje animacije rjesavanja
+        # Gumb za zaustavljanje animacije rješavanja
         self.button_zaustavi_animaciju = QtWidgets.QPushButton(self)
         self.button_zaustavi_animaciju.setFixedSize(56, 56)
         self.button_zaustavi_animaciju.setIcon(QtGui.QIcon("ikone\Stani.png")) #icon
@@ -241,7 +241,6 @@ class Window(QtWidgets.QMainWindow):
         self.button_korak_unaprijed.setIconSize(QtCore.QSize(50, 50))
         self.button_korak_unaprijed.clicked.connect(self.korak_unaprijed)
         self.g_layout_okreni.addWidget(self.button_korak_unaprijed, 6, 1, 1, 1)
-
 
 
 
@@ -329,26 +328,26 @@ class Window(QtWidgets.QMainWindow):
         self.label_ispis_boja.setFont(self.font)
         self.g_layout_label.addWidget(self.label_ispis_boja, 0, 1, 1, 1)
 
-        # Label koraci za rucno rjesanje
+        # Label koraci za rucno rješanje
         self.label_koraci = QtWidgets.QLabel(self)
         self.label_koraci.setFont(self.font)
         self.label_koraci.setText("Koraci za ručno rješavanje:")
         self.g_layout_label.addWidget(self.label_koraci, 1, 0, 1, 1)
 
-        # Label za ispis koraka za rucno rjesanje
+        # Label za ispis koraka za rucno rješanje
         self.label_ispis_koraka = QtWidgets.QLabel(self)
         self.label_ispis_koraka.setFixedSize(1100, 40)
         self.label_ispis_koraka.setWordWrap(True)
         self.label_ispis_koraka.setFont(self.font)
         self.g_layout_label.addWidget(self.label_ispis_koraka, 1, 1, 1, 1)
 
-    	# Label koraci za robotsko rjesavanje
+    	# Label koraci za robotsko rješavanje
         self.label_pokreti = QtWidgets.QLabel(self)
         self.label_pokreti.setFont(self.font)
         self.label_pokreti.setText("Koraci za robotsko rješavanje:")
         self.g_layout_label.addWidget(self.label_pokreti, 2, 0, 1, 1)
 
-        # Label za ispis koraka za robotsko rjesavanje
+        # Label za ispis koraka za robotsko rješavanje
         self.label_ispis_pokreta = QtWidgets.QLabel(self)
         self.label_ispis_pokreta.setFixedSize(1100, 40)
         self.label_ispis_pokreta.setWordWrap(True)
@@ -395,13 +394,13 @@ class Window(QtWidgets.QMainWindow):
         self.label_kamera_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
         self.g_layout_funk.addWidget(self.label_kamera_state, 1, 1, 1, 1)
 
-        # Label za opis gumba rijesi
+        # Label za opis gumba riješi
         self.label_rijesi = QtWidgets.QLabel(self)
         self.label_rijesi.setFont(self.font)
         self.label_rijesi.setText("Pokretanje algoritma za rješavanje kocke")
         self.g_layout_funk.addWidget(self.label_rijesi, 2, 0, 1, 2)
 
-        # Gumb za pokretanje rjesavanja kocke
+        # Gumb za pokretanje rješavanja kocke
         self.button_rijesi = QtWidgets.QPushButton(self)
         self.button_rijesi.setFont(self.font)
         self.button_rijesi.setText('Riješi')
@@ -446,7 +445,7 @@ class Window(QtWidgets.QMainWindow):
         self.button_slanje.clicked.connect(self.slanje_koraka)
         self.g_layout_funk.addWidget(self.button_slanje, 7, 0, 1, 1)
 
-         # Label za prikaz stanja robota (trenutno rjesava ili miruje) 
+        # Label za prikaz uspješnog slanja koraka
         self.label_slanje_state = QtWidgets.QLabel(self)
         self.label_slanje_state.setFixedSize(40, 40)
         self.label_slanje_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
@@ -470,7 +469,7 @@ class Window(QtWidgets.QMainWindow):
         self.g_layout_funk.addWidget(self.label_opis_koraka, 9, 0, 1, 2, QtCore.Qt.AlignCenter | QtCore.Qt.AlignBottom)
 
 
-# Funkcije
+# Metode
     
     # Skaliranje dijelova aplikacije s prozorom
     def resizeEvent(self, event):
@@ -497,7 +496,7 @@ class Window(QtWidgets.QMainWindow):
 
 
 
-    # Funkcije za okretanje 3D modela kocke
+    # Metode za okretanje 3D modela kocke
     def rotate_cube_right(self):
         self.cube_widget_3d.rotateCube(0, 90, 0)
 
@@ -508,7 +507,7 @@ class Window(QtWidgets.QMainWindow):
         self.cube_widget_3d.rotateCube(0, 0, 180)
 
 
-    # Funkcije za postavljanje 2D ili 3D prikaza
+    # Metode za postavljanje 2D ili 3D prikaza
     def prikaz_3d(self):
         self.cube_widget_3d.setColors(self.cube_widget_2d.button_colors)
         self.cube_widget_3d.current_index = 0
@@ -524,7 +523,7 @@ class Window(QtWidgets.QMainWindow):
         self.cube_widget_2d.show()
     
 
-    # Funkcije za postavljanje boja buttonima
+    # Metode za postavljanje boja buttonima
     def izaberi_boju(self):
         global prev_boja, izabrana_boja
         button = self.sender()
@@ -552,12 +551,11 @@ class Window(QtWidgets.QMainWindow):
         global izabrana_boja
         self.cube_widget_2d.setColor(button_name, izabrana_boja)
 
-
     def reset_2d_boje(self):
         self.cube_widget_2d.resetColors()
     
 
-    # Funkcija za otvaranje popup prozora i snimanje kocke
+    # Metode za otvaranje skočnog prozora i snimanje kocke
     def snimi_kocku(self):
         self.label_kamera_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(90,255,90) ")
         self.camera_widget.start_camera()
@@ -574,7 +572,7 @@ class Window(QtWidgets.QMainWindow):
         self.camera_widget.stop_camera()
 
 
-    # Funkcija za dobivanje rjesenja i ispis istog
+    # Metoda za dobivanje rješenja i ispis istoga
     def rijesi_kocku(self):
         koraci = kociemba.solve(self.cube_widget_2d.tileString())
         self.label_ispis_boja.setText(self.cube_widget_2d.tileString())
@@ -588,7 +586,7 @@ class Window(QtWidgets.QMainWindow):
         self.label_ispis_pokreta.setText(pokreti)
 
 
-    # Funkcija za pokretanje animacije rješavanja 3D kocke
+    # Metoda za pokretanje animacije rješavanja 3D kocke
     def pokreni_animaciju(self):
         koraci = self.label_ispis_koraka.text()
         move_list = re.findall(r'[RLUDFB]\'?[0-2]?', koraci)  # Izrada liste iz stringa 
@@ -596,12 +594,12 @@ class Window(QtWidgets.QMainWindow):
         self.cube_widget_3d.animated_solve(move_list)
 
 
-    # Funkcija za zaustavljanje animacije rješavanja 3D kocke
+    # Metoda za zaustavljanje animacije rješavanja 3D kocke
     def zaustavi_animaciju(self):
         self.cube_widget_3d.control_flag = False
 
 
-    # Funkcija za postavljanje 3D kocke korak unaprijed
+    # Metoda za postavljanje 3D kocke korak unaprijed
     def korak_unaprijed(self):
         koraci = self.label_ispis_koraka.text()
         move_list = re.findall(r'[RLUDFB]\'?[0-2]?', koraci)  # Izrada liste iz stringa 
@@ -620,7 +618,7 @@ class Window(QtWidgets.QMainWindow):
                 self.cube_widget_3d.current_index += 1
 
 
-    # Funkcija za postavljanje 3D kocke korak unazad
+    # Metoda za postavljanje 3D kocke korak unazad
     def korak_unazad(self):
         koraci = self.label_ispis_koraka.text()
         move_list = re.findall(r'[RLUDFB]\'?[0-2]?', koraci)  # Izrada liste iz stringa 
@@ -643,7 +641,7 @@ class Window(QtWidgets.QMainWindow):
             self.cube_widget_3d.rotateSide(new_move, 1)
             self.cube_widget_3d.current_index -= 1
 
-    # Funkcija za spajanje bluetooth uređaja
+    # Metoda za spajanje bluetooth uređaja
     def spajanje_bluetooth(self):
         self.label_bluetooth_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(90,255,90) ")
         
@@ -662,7 +660,7 @@ class Window(QtWidgets.QMainWindow):
             return
 
 
-    # Funkcija za slanje koraka na mikrokontroler putem bluetooth veze
+    # Metoda za slanje koraka na mikrokontroler putem bluetooth veze
     def slanje_koraka(self):
         if self.sock is None:
             self.label_slanje_state.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(220,0,0) ")

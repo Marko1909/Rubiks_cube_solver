@@ -3,14 +3,14 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 
 
-# Define the colors for each face
+# Boje stranica
 colors = {
-    'U': 'rgb(255,255,255)',  #White
-    'L': 'rgb(255,175,30)',  #Orange
-    'F': 'rgb(90,210,100)',  #Green
-    'R': 'rgb(240,50,50)',  #Red
-    'B': 'rgb(30,95,255)',  #Blue
-    'D': 'rgb(242,242,20)'  #Yellow
+    'U': 'rgb(255,255,255)',  # White
+    'L': 'rgb(255,175,30)',  # Orange
+    'F': 'rgb(90,210,100)',  # Green
+    'R': 'rgb(240,50,50)',  # Red
+    'B': 'rgb(30,95,255)',  # Blue
+    'D': 'rgb(242,242,20)'  # Yellow
     }
 
 # Layout kocke u 2D prikazu
@@ -28,8 +28,7 @@ cube_layout = [
 
 
 class Cube2DWidget(QtWidgets.QWidget):
-
-    # Define a custom signal
+    # Izrada signala za buttone
     buttonClickedSignal = QtCore.pyqtSignal(str)
 
     def __init__(self):
@@ -45,7 +44,7 @@ class Cube2DWidget(QtWidgets.QWidget):
 
         global colors, cube_layout
 
-        # Create buttons
+        # Izrada buttona
         for row, row_data in enumerate(cube_layout):
             for col, tile in enumerate(row_data):
                 if tile != ' ':
@@ -60,10 +59,10 @@ class Cube2DWidget(QtWidgets.QWidget):
                         button.setText(tile[0])
                         button.setFont(QtGui.QFont('Times New Roman', 16))
                     grid.addWidget(button, row, col)
-                    self.buttons.append(button)  # Add button to list
-                    self.button_colors[tile] = colors[face]  # Add button to dictionary with color
+                    self.buttons.append(button)  # Dodavanje buttona u listu
+                    self.button_colors[tile] = colors[face]  # Dodavanje buttona u rječnik s bojama
 
-
+    # Emitiranje signala tijekom pritiska na jedan od izrađenih buttona
     def emitCustomSignal(self):
         button = self.sender()
         self.buttonClickedSignal.emit(button.objectName())
@@ -72,34 +71,34 @@ class Cube2DWidget(QtWidgets.QWidget):
         self.buttonClickedSignal.connect(slot)
 
 
-    # Funkcija za postavljanje boje pojedinačnih polja pritiskom gumba
+    # Metoda za postavljanje boje pojedinačnih polja pritiskom gumba
     def setColor(self, button_name, color):
         for button in self.buttons:
             if button.objectName() == button_name:
                 button.setStyleSheet(f'background-color: {color}; border:2px solid black')
-                self.button_colors[button_name] = color  # Update color in dictionary
+                self.button_colors[button_name] = color  # Ažuriranje boje buttona
 
-    # Funkcija za postavljanje skeniranih boja
+    # Metoda za postavljanje skeniranih boja
     def setScanedColors(self, color_dict):
         for button in self.buttons:
             if button.objectName() not in ['U5', 'L5', 'F5', 'R5', 'B5', 'D5']:
                 if color_dict.get(button.objectName()):
                     button.setStyleSheet(f'background-color: {colors[color_dict.get(button.objectName())]}; border:2px solid black')
-                    self.button_colors[button.objectName()] = colors[color_dict.get(button.objectName())]  # Update color in dictionary     
+                    self.button_colors[button.objectName()] = colors[color_dict.get(button.objectName())]  # Ažuriranje boje buttona     
 
-    # Funkcija za resetiranje boja polja
+    # Metoda za resetiranje boja polja
     def resetColors(self):
         global colors
         for button in self.buttons:
             button.setStyleSheet(f'background-color: {colors[button.objectName()[0]]}; border:2px solid black')
             self.button_colors[button.objectName()] = colors[button.objectName()[0]]
 
-    # Funkccija za promjenu veličine buttona
+    # Metoda za promjenu veličine buttona
     def buttonSize(self, widht, height):
         for button in self.buttons:
             button.setFixedSize(QtCore.QSize(int(widht), int(height)))
 
-    # Funkcija za dobivanje boja polja za kociemba algoritam
+    # Metoda za dobivanje boja polja za kociemba algoritam
     def tileString(self):
         global colors
         side_color = ""

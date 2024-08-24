@@ -7,8 +7,8 @@
 #define GREEN_LED 3
 #define BUTTON 23
 
-#define t_servo 32  // Top flip/cover servo
-#define b_servo 33  // Botton turn servo
+#define t_servo 32  // Gornji flip/cover servo
+#define b_servo 33  // Donji turn servo
 
 #define SERVO_B 0
 #define SERVO_T 1
@@ -16,36 +16,32 @@
 #define RESOLUTION 10
 
 // Pulse width range: 0.5～2.5ms 
-// Servo duty value za -90deg | resoluiton * max_PW / frequency = 2^10 * 2.5ms / (1/50Hz / 10^(-3))
-// Servo duty value za 90deg  | resoluiton * min_PW / frequency
-// Servo duty value za 0deg   | resoluiton * mid_PW / frequency
+// Servo duty value = pulse_width * resoluiton / frequency = 2.5ms * 2^10 / (1/50Hz / 10^(-3))
 
-// Preset vrijednosti za upravljanje servo motorima
-const int t_servo_flip = 54;         // top servo position to flip the cube
-const int t_servo_open = 68;         // top servo position to free up the top cover from the cube, and keep the lifter out of the way
-const int t_servo_close = 76;            // top servo position to constrain the cube mid and top layer
-const int t_flip_to_close_time = 800;         // time needed to the servo to lower the cover/flipper from flip to close position
-const int t_close_to_flip_time = 1000;        // time needed to the servo to raise the cover/flipper from close to flip position
-const int t_flip_open_time = 600;             // time needed to the servo to raise/lower the flipper between open and flip positions
-const int t_open_close_time = 400;            // time needed to the servo to raise/lower the flipper between open and close positions
+// Preset vrijednosti za upravljanje servomotorima
+const int t_servo_flip = 54;             // Gornji servo - flip pozicija
+const int t_servo_open = 68;             // Gornji servo - open pozicija 
+const int t_servo_close = 76;            // Gornji servo - close pozicija
+const int t_flip_to_close_time = 800;    // vrijeme potrebno za spuštanje iz flipa u closed poziciju
+const int t_close_to_flip_time = 1000;   // vrijeme potrebno za podzianje iz close u flip poziciju
+const int t_flip_open_time = 600;        // vrijeme potrebno za podzianje/spuštanje između open i flip pozicije
+const int t_open_close_time = 400;       // vrijeme potrebno za podzianje/spuštanje između open i close pozicije
 
-const int b_servo_CCW = 51;                   // bottom servo position when fully CW 
-const int b_home = 76;                        // bottom servo home position
-const int b_servo_CW = 101;                   // bottom servo position when fully CCW
-const int b_spin_time = 800;                 // time needed to the bottom servo to spin about 90deg
-const int b_rotate_time = 800;               // time needed to the bottom servo to rotate about 90deg
-const int b_rel_time = 100;                   // time needed to the servo to rotate slightly back, to release tensions
+const int b_servo_CCW = 51;              // Donji servo - CW pozicija  
+const int b_home = 76;                   // Donji servo - home pozicija
+const int b_servo_CW = 101;              // Donji servo - CCW pozicija
+const int b_spin_time = 800;             // vrijeme potrebno za okretanje cijele kocke za 90°
+const int b_rotate_time = 800;           // vrijeme potrebno za rješavanje kocke rotacijom za 90°
+const int b_rel_time = 100;              // vrijeme potrebno za otpuštanje, okretanje korak unazad
+const int b_home_from_CW = b_home - 2;   // rotacija za 2 koraka više tijekom rješavanja zbog kompenzacije razmaka 
+const int b_home_from_CCW = b_home + 2;  // rotacija za 2 koraka više tijekom rješavanja zbog kompenzacije razmaka
 
-const int b_home_from_CW = b_home - 2;        // bottom servo extra home position, when moving back from full CW
-const int b_home_from_CCW = b_home + 2;       // bottom servo extra home position, when moving back from full CCW
-
-
-int t_top_cover = 1;           // Stanje gornjeg servo motora (0 - closed, 1 - open, 2 - flip) 
-bool b_servo_operable = true;  // Varijabla za blokiranje/dopuštanje rada donjeg servo motora 
-bool b_servo_stopped = true;   // Varijabla pozicije donjeg servo motora za omogućavanje kretanja gornjeg servo motora  
-bool b_servo_home = true;      // Varijabla za poziciju donjeg servo motora na 0°
-bool b_servo_CW_pos = false;   // Varijabla za poziciju donjeg servo motora na 90°
-bool b_servo_CCW_pos = false;  // Varijabla za poziciju donjeg servo motora na -90°
+int t_top_cover = 1;           // Stanje gornjeg ora (0 - closed, 1 - open, 2 - flip) 
+bool b_servo_operable = true;  // Varijabla za blokiranje/dopuštanje rada donjeg servomotora 
+bool b_servo_stopped = true;   // Varijabla pozicije donjeg servomotora za omogućavanje kretanja gornjeg servomotora  
+bool b_servo_home = true;      // Varijabla za poziciju donjeg servomotora na 0°
+bool b_servo_CW_pos = false;   // Varijabla za poziciju donjeg servomotora na 90°
+bool b_servo_CCW_pos = false;  // Varijabla za poziciju donjeg servomotora na -90°
 bool stop_servos = true;
 
 // Funckije
@@ -61,12 +57,12 @@ void rotate_home(String direction);
 void rotate_out(String direction);
 void servo_solve_cube(String moves);
 
-String remaining_moves = "";   // Global variable to store remaining moves
+String remaining_moves = "";   // Globalna varijabla za spremanje koraka
 
 BluetoothSerial SerialBT;
 
 unsigned long previousMillis = 0;
-const long interval = 50; // interval for checking the button
+const long interval = 50; // Interval provjere pritiska buttona
 
 
 void setup() {
@@ -83,38 +79,42 @@ void setup() {
     delay(50);
     
     digitalWrite(RED_LED, HIGH);
-    ledcWrite(SERVO_B, 76);
-    ledcWrite(SERVO_T, 68);
+    ledcWrite(SERVO_B, 76);      // Početna pozicija donjeg servomotora
+    ledcWrite(SERVO_T, 68);      // Početna pozicija gornjeg servomotora
 
     delay(4000);
 
-    SerialBT.begin("LolinD32");
+    SerialBT.begin("LolinD32");  // Pokretanje bluetooth komunikacije
 
 }
 
 void loop() {
-    if (SerialBT.hasClient()) {
+    // Provjera bluetooth konekcije
+    if (SerialBT.hasClient()) {         
         digitalWrite(BLUE_LED, HIGH);
     }
     else {
         digitalWrite(BLUE_LED, LOW);
     }
-    
-    if (SerialBT.available()) {
+
+    // Primanje i postavljanje koraka
+    if (SerialBT.available()) {         
         remaining_moves = SerialBT.readString();
     }
 
+    // Izmjena stop_servo varijable buttonom
     if (digitalRead(BUTTON) == HIGH && remaining_moves.length() > 0) {
-            stop_servos = !stop_servos;  // Toggle the stop_servos variable
+            stop_servos = !stop_servos;  
             delay(200);  // Debounce delay
-
         }
 
+    // Pokretanje slaganja rubikove kocke
     if (!stop_servos && remaining_moves.length() > 0) {
             digitalWrite(GREEN_LED, HIGH);
             servo_solve_cube(remaining_moves);
         }
-
+    
+    // Treptanje LED diode ako je preostalo koraka
     if (remaining_moves.length() > 0 && stop_servos) {
         digitalWrite(GREEN_LED, HIGH);
         customDelay(500);
@@ -122,12 +122,14 @@ void loop() {
         customDelay(500);
     }
 
+    // Isključi LED diodu ako nema koraka
     if (remaining_moves.length() == 0) {
         stop_servos = true;
         digitalWrite(GREEN_LED, LOW);
     }
    
 }
+
 
 // Delay koji ne blokira ostale naredbe
 void customDelay(unsigned long delayTime) {
@@ -145,6 +147,7 @@ void customDelay(unsigned long delayTime) {
 }
 
 
+// Funkcija za postavljanje flip poziciju
 void flip_up() {
     if (b_servo_stopped) {
         b_servo_operable = false;
@@ -159,6 +162,8 @@ void flip_up() {
     }
 }
 
+
+// Funkcija za prijelaz iz flip u open poziciju
 void flip_to_open() {
     if (b_servo_stopped) {
         b_servo_operable = false;
@@ -170,6 +175,8 @@ void flip_to_open() {
     
 }
 
+
+// Funkcija za prijelaz iz flip u closed poziciju
 void flip_to_close() {
     if (b_servo_stopped) {
         b_servo_operable = false;
@@ -184,6 +191,8 @@ void flip_to_close() {
     }
 }
 
+
+// Funkcija za postavljanje u open poziciju
 void open_cover() {
     if (b_servo_stopped) {
         b_servo_operable = false;
@@ -194,6 +203,8 @@ void open_cover() {
     }
 }
 
+
+// Funkcija za postavljanje u closed poziciju
 void close_cover() {
     if (b_servo_stopped) {
         b_servo_operable = false;
@@ -204,6 +215,8 @@ void close_cover() {
     }
 }
 
+
+// Funkcija za okretanje u CW ili CCW poziciju (90° ili -90°)
 void spin_out(String direction) {
     if (b_servo_operable) {
         if (b_servo_home) {
@@ -230,6 +243,8 @@ void spin_out(String direction) {
     }
 }
 
+
+// Funkcija za okretanje u nultu poziciju (0°)
 void spin_home() {
     if (b_servo_home == false) {
         if (t_top_cover != 1) {
@@ -245,6 +260,8 @@ void spin_home() {
     }
 }
 
+
+// Funkcija za rješavanje rotacijom u nultu poziciju (0°)
 void rotate_home(String direction) {
     if (b_servo_operable) {
         if (!b_servo_home) {
@@ -301,11 +318,8 @@ void rotate_out(String direction) {
     }
 }
 
-
+// Funkcija za upravljanje servomotorima i rješavanje kocke
 void servo_solve_cube(String moves) {
-    // Function that translates the received string of moves, into servos sequence activations.
-    // This is substantially the main function.
-
     int string_len = moves.length();  // number of characters in the moves string
 
     for (int i = 0; i < string_len; i++) {  // iteration over the characters of the moves string

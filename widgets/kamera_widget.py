@@ -136,11 +136,13 @@ class CameraWidget(QtWidgets.QWidget):
         self.h_layout = QtWidgets.QHBoxLayout()
         self.layout.addLayout(self.h_layout)
 
+        # Label za obavještavanje o snimljenoj stranici
         self.text_label = QtWidgets.QLabel(self)
         self.text_label.setFont(QtGui.QFont('Times New Roman', 12))
         self.text_label.setText("Nema smiljenih stranica.")
         self.h_layout.addWidget(self.text_label)
 
+        # Button za ručno spremanje snimljene stranice 
         self.button_save = QtWidgets.QPushButton(self)
         self.button_save.setFont(QtGui.QFont('Times New Roman', 12))
         self.button_save.setText('Spremi')
@@ -150,7 +152,6 @@ class CameraWidget(QtWidgets.QWidget):
         self.h_layout.addWidget(self.button_save)
 
         self.setLayout(self.layout)
-        
 
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_frame)
@@ -160,6 +161,7 @@ class CameraWidget(QtWidgets.QWidget):
         self.button_colors = {}
         self.latest_detected_side = []
 
+    # Metode za paljenje i gašenje kamere
     def start_camera(self):
         self.cap = cv2.VideoCapture(0)
         self.timer.start(10)
@@ -171,7 +173,7 @@ class CameraWidget(QtWidgets.QWidget):
             self.cap = None
     
 
-    # Obrada videozapisa
+    # Metoda za obradu videozapisa
     def update_frame(self):
         ret, frame = self.cap.read()
         if ret:
@@ -210,6 +212,7 @@ class CameraWidget(QtWidgets.QWidget):
         self.setMaximumSize(width, height)
         self.resize(width, height)
 
+    # Metoda za ručno spremanje boja stranice
     def rucno_spremi_stranicu(self):
         center_color = self.latest_detected_side[4]
         self.center_colors.append(center_color)
