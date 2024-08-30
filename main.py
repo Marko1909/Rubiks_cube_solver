@@ -409,6 +409,12 @@ class Window(QtWidgets.QMainWindow):
         self.button_rijesi.clicked.connect(self.rijesi_kocku)
         self.g_layout_funk.addWidget(self.button_rijesi, 3, 0, 1, 1)
 
+        # Label za prikaz stanja izrade rješenja
+        self.label_rjesenje = QtWidgets.QLabel(self)
+        self.label_rjesenje.setFixedSize(40, 40)
+        self.label_rjesenje.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(200,200,200) ")
+        self.g_layout_funk.addWidget(self.label_rjesenje, 3, 1, 1, 1)
+
         # Label za opis gumba provjera konekcije
         self.label_provjera = QtWidgets.QLabel(self)
         self.label_provjera.setFont(self.font)
@@ -574,16 +580,23 @@ class Window(QtWidgets.QMainWindow):
 
     # Metoda za dobivanje rješenja i ispis istoga
     def rijesi_kocku(self):
-        koraci = kociemba.solve(self.cube_widget_2d.tileString())
-        self.label_ispis_boja.setText(self.cube_widget_2d.tileString())
-        self.label_ispis_koraka.setText(koraci)
-        pokreti = robot_moves(koraci)
+        try:
+            koraci = kociemba.solve(self.cube_widget_2d.tileString())
+            self.label_ispis_boja.setText(self.cube_widget_2d.tileString())
+            self.label_ispis_koraka.setText(koraci)
 
-        if len(pokreti) > 100:
-            pokreti = [pokreti[i:i+99] for i in range(0, len(pokreti), 99)]
+            pokreti = robot_moves(koraci)
 
-        pokreti = ' '.join(pokreti)
-        self.label_ispis_pokreta.setText(pokreti)
+            if len(pokreti) > 100:
+                pokreti = [pokreti[i:i+99] for i in range(0, len(pokreti), 99)]
+
+            pokreti = ' '.join(pokreti)
+            self.label_ispis_pokreta.setText(pokreti)
+
+            self.label_rjesenje.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(90,255,90)")
+        
+        except:
+            self.label_rjesenje.setStyleSheet("border: 2px solid black; border-radius: 20px; background-color: rgb(220,0,0)")
 
 
     # Metoda za pokretanje animacije rješavanja 3D kocke

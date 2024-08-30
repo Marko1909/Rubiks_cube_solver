@@ -290,7 +290,7 @@ class Cube3DWidget(QtWidgets.QOpenGLWidget):
             execute -= 1
             self.executed -= 1
             if execute > 0:
-                QtCore.QTimer.singleShot(500, lambda: self.rotateSide(event, execute))  # Pricekaj pola sekunde da prvi korak zavrsi
+                QtCore.QTimer.singleShot(700, lambda: self.rotateSide(event, execute))  # Pricekaj pola sekunde da prvi korak zavrsi
  
 
     # Okretanje cijele Rubikove kocke
